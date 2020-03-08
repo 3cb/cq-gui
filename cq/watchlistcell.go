@@ -1,6 +1,8 @@
 package cq
 
 import (
+	"fmt"
+
 	"fyne.io/fyne"
 	"fyne.io/fyne/canvas"
 	"fyne.io/fyne/layout"
@@ -8,7 +10,7 @@ import (
 )
 
 func newPriceCell(q Quote) *fyne.Container {
-	textColor := setColor(q)
+	textColor := setColor(q.DailyChange)
 	bgColor := theme.BackgroundColor()
 
 	p := canvas.NewText(q.Price, textColor)
@@ -26,18 +28,18 @@ func updatePriceCell(cell *fyne.Container, q Quote, u UpdateType) *fyne.Containe
 	switch u {
 	case InitUpd:
 		bgColor = theme.BackgroundColor()
-		textColor = setColor(q)
+		textColor = setColor(q.DailyChange)
 	case TradeUpd:
-		bgColor = setColor(q)
+		bgColor = setColor(q.DailyChange)
 		textColor = theme.BackgroundColor()
 	case FlashUpd:
 		bgColor = theme.BackgroundColor()
-		textColor = setColor(q)
+		textColor = setColor(q.DailyChange)
 	default:
 
 	}
 	rect := canvas.NewRectangle(bgColor)
-	text := canvas.NewText(q.Price, textColor)
+	text := canvas.NewText(fmt.Sprintf("%v ", q.Price), textColor)
 	text.Alignment = fyne.TextAlignTrailing
 
 	return fyne.NewContainerWithLayout(layout.NewBorderLayout(nil, nil, nil, nil), rect, text)

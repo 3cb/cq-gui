@@ -37,7 +37,7 @@ func FmtPrice(price string) string {
 }
 
 // FmtDelta calculates change in price and price delta as percentage
-func FmtDelta(price string, open string) (string, string, DailyChange) {
+func FmtDelta(price string, open string) (string, string, PriceChange) {
 	if len(price) > 0 && len(open) > 0 {
 		p, err := strconv.ParseFloat(price, 64)
 		if err != nil {
@@ -48,8 +48,8 @@ func FmtDelta(price string, open string) (string, string, DailyChange) {
 			return "", "-", Even
 		}
 
-		// calc daily change
-		var dchange DailyChange
+		// set price change
+		var dchange PriceChange
 		switch true {
 		case p > o:
 			dchange = Up

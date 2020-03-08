@@ -12,9 +12,9 @@ type Quote struct {
 	Price      string
 	Change     string
 	ChangePerc string
-	// DailyChange is used to minize calculations of price change from open
+	// PriceChange is used to minize calculations of price change from open
 	// It is set within the FormatQuote function
-	DailyChange DailyChange
+	DailyChange PriceChange
 	Size        string
 	Bid         string
 	Ask         string

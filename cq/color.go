@@ -8,8 +8,8 @@ var (
 	white = color.White
 )
 
-func setColor(q Quote) color.Color {
-	switch q.DailyChange {
+func setColor(c PriceChange) color.Color {
+	switch c {
 	case Up:
 		return green
 	case Down:
