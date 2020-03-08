@@ -14,14 +14,14 @@ const (
 type Router struct {
 	sync.RWMutex
 
-	// list provides the necessary channels for each trading pair to be routed
+	// list provides the necessary channels for each watchlist pair to be routed
 	list map[Pair]chans
 
-	// inbound channel is returned by Router.GetInbound()
-	inbound chan UpdateMsg
-
-	// outbound is returned by Router.GetOutbound()
-	outbound chan UpdateMsg
+	// inbound/outbound channels carry new price Quotes
+	// quoteIn channel is returned by Router.GetQuoteIn()
+	quoteIn chan UpdateMsg
+	// quoteOut is returned by Router.GetQuoteOut()
+	quoteOut chan UpdateMsg
 
 	shutdown chan struct{}
 }
@@ -35,8 +35,8 @@ type chans struct {
 func StartRouter(pairs []Pair) *Router {
 	r := &Router{
 		list:     make(map[Pair]chans),
-		inbound:  make(chan UpdateMsg, queueSize),
-		outbound: make(chan UpdateMsg, queueSize),
+		quoteIn:  make(chan UpdateMsg, queueSize),
+		quoteOut: make(chan UpdateMsg, queueSize),
 		shutdown: make(chan struct{}, 1),
 	}
 
@@ -55,7 +55,7 @@ func StartRouter(pairs []Pair) *Router {
 			case <-r.shutdown:
 				r.stopAll()
 				break EventLoop
-			case msg := <-r.inbound:
+			case msg := <-r.quoteIn:
 				ch := r.FindChan(msg.Quote.ID)
 				ch <- msg
 			}
@@ -90,7 +90,7 @@ func (r *Router) AddPair(pair Pair) {
 				break PairRoutingLoop
 			case t := <-timer.C:
 				if t.After(lastTime) {
-					r.outbound <- UpdateMsg{
+					r.quoteOut <- UpdateMsg{
 						Quote: Quote{
 							ID: p,
 						},
@@ -103,9 +103,9 @@ func (r *Router) AddPair(pair Pair) {
 					timer.Stop()
 					timer.Reset(timerDuration)
 					lastTime = time.Now()
-					r.outbound <- msg
+					r.quoteOut <- msg
 				case TickerUpd:
-					r.outbound <- msg
+					r.quoteOut <- msg
 				}
 			}
 		}
@@ -120,18 +120,18 @@ func (r *Router) RemovePair(pair Pair) {
 	delete(r.list, pair)
 }
 
-func (r *Router) GetInbound() chan<- UpdateMsg {
+func (r *Router) GetQuoteIn() chan<- UpdateMsg {
 	r.RLock()
 	defer r.RUnlock()
 
-	return r.inbound
+	return r.quoteIn
 }
 
-func (r *Router) GetOutbound() <-chan UpdateMsg {
+func (r *Router) GetQuoteOut() <-chan UpdateMsg {
 	r.RLock()
 	defer r.RUnlock()
 
-	return r.outbound
+	return r.quoteOut
 }
 
 // FindChan returns appropriate channel for timer group
