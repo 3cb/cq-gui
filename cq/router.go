@@ -6,28 +6,6 @@ import (
 )
 
 const (
-	// InitUpd denotes an UpdateMsg that originates from a rest api call
-	InitUpd UpdateType = 0
-	// TradeUpd will trigger the watchlist cell to flash
-	TradeUpd UpdateType = 1
-	// TickerUpd will update quote but not effect flash state
-	TickerUpd UpdateType = 2
-	// FlashUpd will remove flash from price cell
-	FlashUpd UpdateType = 3
-)
-
-// UpdateType determines how to set watchlist colors and flash status
-type UpdateType int
-
-// UpdateMsg carries quotes from TimerGroup event loop to main cq event loop
-// IsTrade and Flash fields allow event loop to set table fonts for quotes
-type UpdateMsg struct {
-	Quote Quote
-
-	Type UpdateType
-}
-
-const (
 	queueSize     = 300
 	timerDuration = (300 * time.Millisecond)
 )
