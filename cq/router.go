@@ -36,7 +36,7 @@ const (
 type Router struct {
 	sync.RWMutex
 
-	// lprovides the necessary channels for each trading pair to be routed
+	// list provides the necessary channels for each trading pair to be routed
 	list map[Pair]chans
 
 	// inbound channel is returned by Router.GetInbound()
