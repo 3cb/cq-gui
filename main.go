@@ -28,7 +28,6 @@ func main() {
 		os.Exit(1)
 	}
 	for _, q := range initQuotes {
-		// e.SetQuote(q, cq.InitUpd)
 		e.UpdateQuote(cq.UpdateMsg{
 			Quote: q,
 			Type:  cq.InitUpd,
@@ -36,12 +35,20 @@ func main() {
 	}
 
 	// launch streaming
-	updateCh, routerCh := cq.StartRouter(e.GetWatchedPairs())
-	hitbtc.Stream(routerCh, e.GetWatchedPairs())
+	router := cq.StartRouter(e.GetWatchedPairs())
+	toRouter := router.GetInbound()
+	fromRouter := router.GetOutbound()
+
+	ws, err := hitbtc.NewWSCtlr()
+	if err != nil {
+		os.Exit(1)
+	}
+
+	ws.Stream(toRouter, e.GetWatchedPairs()...)
 
 	go func() {
 		for {
-			upd := <-updateCh
+			upd := <-fromRouter
 			e.UpdateQuote(upd)
 		}
 	}()
