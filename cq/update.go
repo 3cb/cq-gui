@@ -37,5 +37,24 @@ type CandleUpdType int
 type CandleUpdMsg struct {
 	Type CandleUpdType
 
-	Candle CandleData
+	// CandleSnapshot will contain multiple bars but CandleUpd will only
+	// contain a single bar
+	Candles []CandleData
+}
+
+const (
+	// HistoryUpd carries new trade data to History widget
+	HistoryUpd HistoryUpdType = iota + 1
+
+	// HistoryHighlightUpd tells History widget to remove row highlight
+	HistoryHighlightUpd
+)
+
+// HistoryUpdType defines type of update message for History widget
+type HistoryUpdType int
+
+// HistoryUpdMsg defines information needed to update History widget
+type HistoryUpdMsg struct {
+	Type  HistoryUpdType
+	Trade Trade
 }

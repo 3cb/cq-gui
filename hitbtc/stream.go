@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 
@@ -195,9 +196,9 @@ func (ws *WSCtlr) UnsubQuotes(pairs ...cq.Pair) error {
 
 func (ws *WSCtlr) SubCandles(pair cq.Pair, interval int, maxBars int) error {
 	params := map[string]string{
-		"symbols": NewSymbol(pair),
-		"period":  "M" + strconv.FormatInt(int64(interval), 10),
-		"limit":   strconv.FormatInt(int64(maxBars), 10),
+		"symbol": NewSymbol(pair),
+		"period": "M" + strconv.FormatInt(int64(interval), 10),
+		"limit":  strconv.FormatInt(int64(maxBars), 10),
 	}
 
 	msg := SubscribeMsg{
@@ -218,7 +219,7 @@ func (ws *WSCtlr) SubCandles(pair cq.Pair, interval int, maxBars int) error {
 
 func (ws *WSCtlr) UnsubCandles(pair cq.Pair, interval int, maxBars int) error {
 	params := map[string]string{
-		"method": NewSymbol(pair),
+		"symbol": NewSymbol(pair),
 		"period": "M" + strconv.FormatInt(int64(interval), 10),
 		"limit":  strconv.FormatInt(int64(maxBars), 10),
 	}
@@ -254,7 +255,7 @@ func (ws *WSCtlr) Shutdown() error {
 }
 
 // Stream connects to HitBTC websocket API to get streaming data
-func (ws *WSCtlr) Stream(routerCh chan<- cq.UpdateMsg, pairs ...cq.Pair) error {
+func (ws *WSCtlr) Stream(routerCh chan<- cq.UpdateMsg, candleCh chan cq.CandleUpdMsg, historyRouterCh chan<- cq.Trade, pairs ...cq.Pair) error {
 	if len(pairs) > 0 {
 		err := ws.subQuotes(pairs...)
 		if err != nil {
@@ -284,7 +285,7 @@ func (ws *WSCtlr) Stream(routerCh chan<- cq.UpdateMsg, pairs ...cq.Pair) error {
 					p := (msg.Params).(map[string]interface{})
 
 					q := cq.Quote{}
-					q.ID = NewPair((p["symbol"]).(string))
+					q.ID = newPair((p["symbol"]).(string))
 					q.Ask = (p["ask"]).(string)
 					q.Bid = (p["bid"]).(string)
 					q.Low = (p["low"]).(string)
@@ -295,23 +296,79 @@ func (ws *WSCtlr) Stream(routerCh chan<- cq.UpdateMsg, pairs ...cq.Pair) error {
 						Quote: q,
 						Type:  cq.TickerUpd,
 					}
+				case "snapshotTrades":
+					p := (msg.Params).(map[string]interface{})
+					trades := (p["data"]).([]interface{})
+					for _, t := range trades {
+						historyRouterCh <- cq.Trade{
+							Pair:  newPair(p["symbol"].(string)),
+							ID:    t.(map[string]interface{})["id"].(float64),
+							Price: t.(map[string]interface{})["price"].(string),
+							Size:  t.(map[string]interface{})["quantity"].(string),
+							Time:  localTime(t.(map[string]interface{})["timestamp"].(string)),
+						}
+					}
 				case "updateTrades":
 					p := (msg.Params).(map[string]interface{})
 					data := (p["data"]).([]interface{})
 					u := (data[0]).(map[string]interface{})
 
 					q := cq.Quote{}
-					q.ID = NewPair((p["symbol"]).(string))
+					q.ID = newPair((p["symbol"]).(string))
 					q.Price = (u["price"]).(string)
 					q.Size = (u["quantity"]).(string)
 					routerCh <- cq.UpdateMsg{
 						Quote: q,
 						Type:  cq.TradeUpd,
 					}
+					historyRouterCh <- cq.Trade{
+						Pair:  newPair(p["symbol"].(string)),
+						ID:    (u["id"]).(float64),
+						Price: (u["price"]).(string),
+						Size:  (u["quantity"]).(string),
+						Time:  localTime((u["timestamp"]).(string)),
+					}
 				case "snapshotCandles":
+					p := (msg.Params).(map[string]interface{})
+					data := (p["data"]).([]interface{})
 
+					candles := []cq.CandleData{}
+					for _, d := range data {
+						t, _ := time.Parse(time.RFC3339, d.(map[string]interface{})["timestamp"].(string))
+						candles = append(candles, cq.CandleData{
+							Timestamp:   t,
+							Open:        d.(map[string]interface{})["open"].(string),
+							Close:       d.(map[string]interface{})["close"].(string),
+							Min:         d.(map[string]interface{})["min"].(string),
+							Max:         d.(map[string]interface{})["max"].(string),
+							Volume:      d.(map[string]interface{})["volume"].(string),
+							VolumeQuote: d.(map[string]interface{})["volumeQuote"].(string),
+						})
+					}
+					candleCh <- cq.CandleUpdMsg{
+						Type:    cq.CandleSnapshot,
+						Candles: candles,
+					}
 				case "updateCandles":
+					p := (msg.Params).(map[string]interface{})
+					data := (p["data"]).([]interface{})
+					u := (data[0]).(map[string]interface{})
 
+					candles := []cq.CandleData{}
+					t, _ := time.Parse(time.RFC3339, u["timestamp"].(string))
+					candles = append(candles, cq.CandleData{
+						Timestamp:   t,
+						Open:        u["open"].(string),
+						Close:       u["close"].(string),
+						Min:         u["min"].(string),
+						Max:         u["max"].(string),
+						Volume:      u["volume"].(string),
+						VolumeQuote: u["volumeQuote"].(string),
+					})
+					candleCh <- cq.CandleUpdMsg{
+						Type:    cq.CandleUpd,
+						Candles: candles,
+					}
 				default:
 					continue
 				}
