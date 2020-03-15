@@ -14,7 +14,7 @@ type Quote struct {
 	ChangePerc string
 	// PriceChange is used to minize calculations of price change from open
 	// It is set within the FormatQuote function
-	DailyChange PriceChange
+	PriceChange PriceChange
 	Size        string
 	Bid         string
 	Ask         string
@@ -42,4 +42,14 @@ func NewPair(b string, q string) Pair {
 // String returns pair as a string - all CAPS separated by "/"
 func (p Pair) String() string {
 	return fmt.Sprintf("%v/%v", p.baseCurrency, p.quoteCurrency)
+}
+
+// BaseCurrency returns the base currency's abbreviation as a string
+func (p Pair) BaseCurrency() string {
+	return p.baseCurrency
+}
+
+// QuoteCurrency returns the quote currency's abbreviation as a string
+func (p Pair) QuoteCurrency() string {
+	return p.quoteCurrency
 }

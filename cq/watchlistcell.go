@@ -10,7 +10,7 @@ import (
 )
 
 func newPriceCell(q Quote) *fyne.Container {
-	textColor := setColor(q.DailyChange)
+	textColor := setColor(q.PriceChange)
 	bgColor := theme.BackgroundColor()
 
 	p := canvas.NewText(q.Price, textColor)
@@ -28,13 +28,13 @@ func updatePriceCell(cell *fyne.Container, q Quote, u UpdateType) *fyne.Containe
 	switch u {
 	case InitUpd:
 		bgColor = theme.BackgroundColor()
-		textColor = setColor(q.DailyChange)
+		textColor = setColor(q.PriceChange)
 	case TradeUpd:
-		bgColor = setColor(q.DailyChange)
+		bgColor = setColor(q.PriceChange)
 		textColor = theme.BackgroundColor()
 	case FlashUpd:
 		bgColor = theme.BackgroundColor()
-		textColor = setColor(q.DailyChange)
+		textColor = setColor(q.PriceChange)
 	default:
 
 	}

@@ -7,7 +7,7 @@ import (
 
 // FmtQuote will format all the data fields of an instance of cq.Quote
 func FmtQuote(q Quote) Quote {
-	q.Change, q.ChangePerc, q.DailyChange = FmtDelta(q.Price, q.Open)
+	q.Change, q.ChangePerc, q.PriceChange = FmtDelta(q.Price, q.Open)
 	q.Price = FmtPrice(q.Price)
 	q.Bid = FmtPrice(q.Bid)
 	q.Ask = FmtPrice(q.Ask)

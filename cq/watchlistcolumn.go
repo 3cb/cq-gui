@@ -53,13 +53,13 @@ func newWatchlistColumn(quotes []Quote, t columnType) *watchlistColumn {
 
 		switch t {
 		case symbolCol:
-			id := canvas.NewText(q.ID.String(), setColor(q.DailyChange))
+			id := canvas.NewText(q.ID.String(), setColor(q.PriceChange))
 			id.Alignment = fyne.TextAlignTrailing
 			c.Append(id)
 		case priceCol:
 			c.Append(newPriceCell(q))
 		case deltaCol:
-			d := canvas.NewText(q.ChangePerc+" %", setColor(q.DailyChange))
+			d := canvas.NewText(q.ChangePerc+" %", setColor(q.PriceChange))
 			d.Alignment = fyne.TextAlignTrailing
 			c.Append(d)
 		}
@@ -80,13 +80,13 @@ func (c *watchlistColumn) add(q Quote) {
 	q = FmtQuote(q)
 	switch c.columnType {
 	case symbolCol:
-		id := canvas.NewText(q.ID.String(), setColor(q.DailyChange))
+		id := canvas.NewText(q.ID.String(), setColor(q.PriceChange))
 		id.Alignment = fyne.TextAlignTrailing
 		c.Append(id)
 	case priceCol:
 		c.Append(newPriceCell(q))
 	case deltaCol:
-		d := canvas.NewText(q.ChangePerc+" %", setColor(q.DailyChange))
+		d := canvas.NewText(q.ChangePerc+" %", setColor(q.PriceChange))
 		d.Alignment = fyne.TextAlignTrailing
 		c.Append(d)
 	}
@@ -105,7 +105,7 @@ func (c *watchlistColumn) update(q Quote, i int, u UpdateType) {
 	switch c.columnType {
 	case symbolCol:
 		if u != FlashUpd {
-			t := canvas.NewText(q.ID.String(), setColor(q.DailyChange))
+			t := canvas.NewText(q.ID.String(), setColor(q.PriceChange))
 			t.Alignment = fyne.TextAlignTrailing
 			c.Children[i] = t
 		}
@@ -114,7 +114,7 @@ func (c *watchlistColumn) update(q Quote, i int, u UpdateType) {
 		c.Children[i] = updatePriceCell(cell, q, u)
 	case deltaCol:
 		if u != FlashUpd {
-			t := canvas.NewText(q.ChangePerc+" %", setColor(q.DailyChange))
+			t := canvas.NewText(q.ChangePerc+" %", setColor(q.PriceChange))
 			t.Alignment = fyne.TextAlignTrailing
 			c.Children[i] = t
 		}
