@@ -7,7 +7,7 @@ import (
 
 const (
 	queueSize     = 300
-	timerDuration = (300 * time.Millisecond)
+	timerDuration = (400 * time.Millisecond)
 )
 
 // Router contains list of all the flash timers
@@ -56,7 +56,7 @@ func StartRouter(pairs []Pair) *Router {
 				r.stopAll()
 				break EventLoop
 			case msg := <-r.quoteIn:
-				ch := r.FindChan(msg.Quote.ID)
+				ch := r.findChan(msg.Quote.ID)
 				ch <- msg
 			}
 		}
@@ -135,7 +135,7 @@ func (r *Router) GetQuoteOut() <-chan UpdateMsg {
 }
 
 // FindChan returns appropriate channel for timer group
-func (r *Router) FindChan(p Pair) chan UpdateMsg {
+func (r *Router) findChan(p Pair) chan UpdateMsg {
 	r.RLock()
 	defer r.RUnlock()
 
