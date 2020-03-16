@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	queueSize     = 300
+	queueSize     = 1000
 	timerDuration = (400 * time.Millisecond)
 )
 
