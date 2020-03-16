@@ -6,7 +6,6 @@ import (
 	"sort"
 
 	"fyne.io/fyne"
-
 	"fyne.io/fyne/canvas"
 	"fyne.io/fyne/theme"
 	"fyne.io/fyne/widget"
@@ -26,6 +25,7 @@ func newWatchlistRow(q Quote) *watchlistRow {
 }
 
 func (r *watchlistRow) update(q Quote, u UpdateType) {
+	q = FmtQuote(q)
 	r.quote = q
 	color := setColor(q.PriceChange)
 	switch u {
@@ -59,7 +59,7 @@ func (r *watchlistRow) CreateRenderer() fyne.WidgetRenderer {
 
 	price := canvas.NewText(r.quote.Price, r.textColor)
 	price.Alignment = fyne.TextAlignTrailing
-	change := canvas.NewText(fmt.Sprintf("%v%", r.quote.PriceChange), r.textColor)
+	change := canvas.NewText(fmt.Sprintf("%v%%", r.quote.ChangePerc), r.textColor)
 	change.Alignment = fyne.TextAlignTrailing
 
 	// add 5 space margin on right side
@@ -121,9 +121,16 @@ func (r *watchlistRowRenderer) Objects() []fyne.CanvasObject {
 
 func (r *watchlistRowRenderer) Refresh() {
 	r.bg.FillColor = r.row.bgColor
+
+	r.symbol.Text = r.row.quote.ID.String()
 	r.symbol.Color = r.row.textColor
+
+	r.price.Text = r.row.quote.Price
 	r.price.Color = r.row.textColor
+
+	r.change.Text = fmt.Sprintf("%v%%", r.row.quote.ChangePerc)
 	r.change.Color = r.row.textColor
+
 	r.Layout(r.row.Size())
 	r.bg.Refresh()
 	r.symbol.Refresh()

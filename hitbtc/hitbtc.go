@@ -24,7 +24,7 @@ func New() (*Exchange, error) {
 	}
 	e.SetID(cq.HitBTC)
 	e.AddAvailablePair(pairs...)
-	e.SetWatchlist("default", e.GetDefaultPairs()...)
+	e.SetWatchlist(e.GetDefaultPairs()...)
 
 	return e, nil
 }

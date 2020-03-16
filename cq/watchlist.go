@@ -2,6 +2,7 @@ package cq
 
 import (
 	"fyne.io/fyne"
+
 	fl "github.com/3cb/fyne-list"
 )
 
@@ -66,4 +67,9 @@ func (w *Watchlist) RemoveQuote(q Quote) {
 
 	w.Quotes = append(w.Quotes[:i], w.Quotes[i+1:]...)
 	w.List.Remove(i)
+}
+
+// MinSize returns the minimum allowable size of this widget
+func (w *Watchlist) MinSize() fyne.Size {
+	return fyne.NewSize(245, 100)
 }
