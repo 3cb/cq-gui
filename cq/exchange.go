@@ -72,12 +72,12 @@ func (e *BaseExchange) GetDefaultPairs() []Pair {
 
 // SetWatchlist sets and returns default watchlist
 // Without inputs this method will use default pairs
-func (e *BaseExchange) SetWatchlist(label string, pairs ...Pair) *Watchlist {
+func (e *BaseExchange) SetWatchlist(pairs ...Pair) *Watchlist {
 	if len(pairs) == 0 {
 		pairs = append(pairs, e.GetDefaultPairs()...)
 	}
 
-	w := NewWatchlist(label, pairs...)
+	w := NewWatchlist(pairs...)
 
 	e.watchlist = w
 
