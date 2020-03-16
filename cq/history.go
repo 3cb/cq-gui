@@ -97,6 +97,7 @@ func (h *History) Add(t Trade) {
 	}
 	h.Index[t.ID] = 0
 	h.lastPrice = t.PriceFloat()
+	h.List.Pop()
 	h.List.Prepend(newHistoryRow(t, h.lastColor, true))
 }
 
