@@ -56,11 +56,12 @@ func NewHistory(pair Pair, trades []Trade) *History {
 		objects = append([]fyne.CanvasObject{o}, objects...)
 	}
 
-	headers := []string{}
-	headers = append(headers, "Size")
-	headers = append(headers, fmt.Sprintf("Price(%v)", pair.QuoteCurrency()))
-	headers = append(headers, "Time")
-	header := fl.NewHeader(setColor(Even), headers...)
+	headers := []string{
+		"Size",
+		fmt.Sprintf("Price(%v)", pair.QuoteCurrency()),
+		"Time",
+	}
+	header := fl.NewHeader(white, headers...)
 
 	list := fl.NewListWithScroller(header, objects...)
 
@@ -103,5 +104,5 @@ func (h *History) Add(t Trade) {
 // RemoveHighlight resets row without highlight
 func (h *History) RemoveHighlight(t Trade) {
 	i := h.Index[t.ID]
-	h.List.Box.Children[i].(*historyRow).removeHighlight()
+	h.List.GetRow(i).(*historyRow).removeHighlight()
 }
