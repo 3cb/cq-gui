@@ -27,11 +27,23 @@ func StartHistoryRouter(pair Pair, lastID float64) *HistoryRouter {
 	}
 
 	go func() {
+		ticker := time.NewTicker(600 * time.Millisecond)
+		defer ticker.Stop()
+		index := make(map[float64]struct{})
+
 	EventLoop:
 		for {
 			select {
 			case <-r.shutdown:
 				break EventLoop
+			case <-ticker.C:
+				for id := range index {
+					r.tradeOut <- HistoryUpdMsg{
+						Type:  HistoryHighlightUpd,
+						Trade: Trade{ID: id},
+					}
+					delete(index, id)
+				}
 			case t := <-r.tradeIn:
 				if t.Pair == r.pair {
 					if t.ID > lastID {
@@ -39,12 +51,7 @@ func StartHistoryRouter(pair Pair, lastID float64) *HistoryRouter {
 							Type:  HistoryUpd,
 							Trade: t,
 						}
-						time.AfterFunc(timerDuration, func() {
-							r.tradeOut <- HistoryUpdMsg{
-								Type:  HistoryHighlightUpd,
-								Trade: Trade{ID: t.ID},
-							}
-						})
+						index[t.ID] = struct{}{}
 					}
 				}
 			}
