@@ -61,6 +61,7 @@ func (r *historyRow) CreateRenderer() fyne.WidgetRenderer {
 	price.Alignment = fyne.TextAlignTrailing
 	time := canvas.NewText(r.data.Time, r.textColor)
 	time.Alignment = fyne.TextAlignTrailing
+
 	// add 5 space margin on right side
 	margin := canvas.NewText("     ", r.textColor)
 	margin.Alignment = fyne.TextAlignTrailing
@@ -90,20 +91,22 @@ func (r *historyRowRenderer) MinSize() fyne.Size {
 
 func (r *historyRowRenderer) Layout(size fyne.Size) {
 	marWidth := r.margin.MinSize().Width
+	columnWidth := (size.Width - marWidth) / 3
+	columnSize := fyne.NewSize((size.Width-marWidth)/3, size.Height)
 
 	r.bg.Move(fyne.NewPos(0, 0))
 	r.bg.Resize(size)
 
 	r.size.Move(fyne.NewPos(0, 0))
-	r.size.Resize(fyne.NewSize((size.Width-marWidth)/3, size.Height))
+	r.size.Resize(columnSize)
 
-	r.price.Move(fyne.NewPos((size.Width-marWidth)/3, 0))
-	r.price.Resize(fyne.NewSize((size.Width-marWidth)/3, size.Height))
+	r.price.Move(fyne.NewPos(columnWidth, 0))
+	r.price.Resize(columnSize)
 
-	r.time.Move(fyne.NewPos(((size.Width-marWidth)/3)*2, 0))
-	r.time.Resize(fyne.NewSize((size.Width-marWidth)/3, size.Height))
+	r.time.Move(fyne.NewPos(columnWidth*2, 0))
+	r.time.Resize(columnSize)
 
-	r.margin.Move(fyne.NewPos((size.Width - marWidth), 0))
+	r.margin.Move(fyne.NewPos(columnWidth*3, 0))
 	r.margin.Resize(fyne.NewSize(marWidth, size.Height))
 }
 

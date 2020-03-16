@@ -10,18 +10,18 @@ import (
 )
 
 // History describes a widget that displays a list of trades in a scrolling
-// container with a header
+// container with a header.  Max number of trades is 50.
 type History struct {
 	*fl.List
 
 	Pair Pair
 	// key values are Trade.ID
 	Index     map[float64]int
-	Trades    []Trade
+	lastPrice float64
 	lastColor color.Color
 }
 
-// NewHistory returns a new instance of the History widget
+// NewHistory returns a new instance of the History widget with 50 trades
 func NewHistory(pair Pair, trades []Trade) *History {
 	index := map[float64]int{}
 	for i, trade := range trades {
@@ -63,13 +63,13 @@ func NewHistory(pair Pair, trades []Trade) *History {
 	}
 	header := fl.NewHeader(white, headers...)
 
-	list := fl.NewListWithScroller(header, objects...)
+	list := fl.NewListWithScroller(header, objects[:50]...)
 
 	return &History{
 		List:      list,
 		Pair:      pair,
 		Index:     index,
-		Trades:    trades,
+		lastPrice: trades[0].PriceFloat(),
 		lastColor: lastColor,
 	}
 }
@@ -82,13 +82,12 @@ func (h *History) MinSize() fyne.Size {
 // Add prepends new trade to History widget with text color
 // and row highlight set
 func (h *History) Add(t Trade) {
-	lastPrice := h.Trades[0].Price
 	switch true {
-	case t.Price > lastPrice:
+	case t.PriceFloat() > h.lastPrice:
 		h.lastColor = setColor(Up)
-	case t.Price < lastPrice:
+	case t.PriceFloat() < h.lastPrice:
 		h.lastColor = setColor(Down)
-	case t.Price == lastPrice:
+	case t.PriceFloat() == h.lastPrice:
 
 	}
 
@@ -97,7 +96,7 @@ func (h *History) Add(t Trade) {
 		h.Index[k]++
 	}
 	h.Index[t.ID] = 0
-	h.Trades = append([]Trade{t}, h.Trades[:len(h.Trades)-1]...)
+	h.lastPrice = t.PriceFloat()
 	h.List.Prepend(newHistoryRow(t, h.lastColor, true))
 }
 
